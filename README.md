@@ -1,6 +1,6 @@
 ## nlink_parser_ros2
 
-This is a port of the [nlink_parser](https://github.com/nooploop-dev/nlink_parser) to run using ros2 foxy to use with the LinkTrack and LinkTrack AoA devices. \
+This is a port of the [nlink_parser](https://github.com/nooploop-dev/nlink_parser) to run using ros2 to use with the LinkTrack and LinkTrack AoA devices. \
 *NOTE* : `tofsense` code has __NOT__ been ported to ros2 yet
 
 ### Build
