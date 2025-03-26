@@ -7,3 +7,4 @@
 [submodule "src/serial"]
 	path = src/serial
 	url = https://github.com/wjwwood/serial.git
+	branch = ros2
