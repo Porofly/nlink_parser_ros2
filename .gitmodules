@@ -4,7 +4,3 @@
 [submodule "src/utils/nlink_unpack"]
 	path = src/utils/nlink_unpack
 	url = https://github.com/nooploop-dev/nlink_unpack.git
-[submodule "src/serial"]
-	path = src/serial
-	url = https://github.com/wjwwood/serial.git
-	branch = ros2
