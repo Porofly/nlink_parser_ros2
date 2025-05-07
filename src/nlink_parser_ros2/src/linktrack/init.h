@@ -20,9 +20,9 @@
 #include "nlink_unpack/nlink_utils.h"
 #include "protocol_extracter/nprotocol_extracter.h"
 
-#include <thread>
-#include <atomic>
-#include <chrono>
+// #include <thread>
+// #include <atomic>
+// #include <chrono>
 
 using anchorframe0 = nlink_parser_ros2_interfaces::msg::LinktrackAnchorframe0;
 using tagframe0 = nlink_parser_ros2_interfaces::msg::LinktrackTagframe0;
@@ -41,12 +41,12 @@ namespace linktrack
   public:
     explicit Init(NProtocolExtracter *protocol_extraction,
                   serial::Serial *serial);
-    ~Init();
+    // ~Init();
   serial::Serial *serial_;
 
   private:
-    std::thread serial_thread_;
-    std::atomic<bool> stop_serial_thread_{false};
+    // std::thread serial_thread_;
+    // std::atomic<bool> stop_serial_thread_{false};
     NProtocolExtracter* protocol_extraction_;
     anchorframe0 buffer_msg_anchorframe0_;
     tagframe0 buffer_msg_tagframe0_;
@@ -58,7 +58,7 @@ namespace linktrack
     nodeframe6 buffer_msg_nodeframe6_;
 
     void initDataTransmission();
-    // void serialReadTimer();
+    void serialReadTimer();
     void nodeFramePublisher();
     void initAnchorFrame0(NProtocolExtracter *protocol_extraction);
     void initTagFrame0(NProtocolExtracter *protocol_extraction);

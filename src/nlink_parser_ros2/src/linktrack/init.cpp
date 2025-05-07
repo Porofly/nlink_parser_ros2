@@ -48,27 +48,27 @@ namespace linktrack
     std::cout<<"here"<<1000.*this->get_parameter("linktrack_publish_interval").as_double()<<std::endl;
     int pub_interval = (int)(1000.*(this->get_parameter("linktrack_publish_interval").as_double()));
     RCLCPP_INFO(this->get_logger(),"Parameter [linktrack_publish_interval] set to [%d] milliseconds",pub_interval);
-    // serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Init::serialReadTimer, this));
-    serial_thread_ = std::thread([this]() {
-      std::string buf;
-      while (rclcpp::ok() && !stop_serial_thread_) {
-        size_t n = this->serial_->read(buf, 1);
-        if (n > 0) {
-          protocol_extraction_->AddNewData(buf);
-        }
-      }
-    });
+    serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&Init::serialReadTimer, this));
+    // serial_thread_ = std::thread([this]() {
+    //   std::string buf;
+    //   while (rclcpp::ok() && !stop_serial_thread_) {
+    //     size_t n = this->serial_->read(buf, 1);
+    //     if (n > 0) {
+    //       protocol_extraction_->AddNewData(buf);
+    //     }
+    //   }
+    // });
     nodeframe_publisher_ =  this->create_wall_timer(std::chrono::milliseconds(pub_interval), std::bind(&Init::nodeFramePublisher, this));
     RCLCPP_INFO(this->get_logger(),"Initialized linktrack");
   }
 
-  Init::~Init()
-  {
-    stop_serial_thread_ = true;
-    if (serial_thread_.joinable()) {
-      serial_thread_.join();
-    }
-  }
+  // Init::~Init()
+  // {
+  //   stop_serial_thread_ = true;
+  //   if (serial_thread_.joinable()) {
+  //     serial_thread_.join();
+  //   }
+  // }
 
   void Init::nodeFramePublisher(){
     pub_anchor_frame0_->publish(this->buffer_msg_anchorframe0_);
@@ -81,15 +81,15 @@ namespace linktrack
     pub_node_frame6_->publish(this->buffer_msg_nodeframe6_);
   }
 
-  // void Init::serialReadTimer(){
-  //   auto available_bytes = this->serial_->available();
-  //   std::string str_received;
-  //   if (available_bytes)
-  //   {
-  //     this->serial_->read(str_received, available_bytes);
-  //     this->protocol_extraction_->AddNewData(str_received);
-  //   }
-  // }
+  void Init::serialReadTimer(){
+    auto available_bytes = this->serial_->available();
+    std::string str_received;
+    if (available_bytes)
+    {
+      this->serial_->read(str_received, available_bytes);
+      this->protocol_extraction_->AddNewData(str_received);
+    }
+  }
 
   void Init::initDataTransmission()
   {
