@@ -23,7 +23,7 @@ namespace linktrack
 
   Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial) : Node("linktrack_ros2")
   {
-    this->declare_parameter("linktrack_publish_interval", 2.);
+    this->declare_parameter("linktrack_publish_interval", 0.04); // publish interval [seconds], 0.04s -> 40ms -> 25Hz
     serial_ = serial;
     protocol_extraction_ = protocol_extraction;
     initDataTransmission();
