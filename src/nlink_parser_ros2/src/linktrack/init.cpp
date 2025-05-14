@@ -48,27 +48,10 @@ namespace linktrack
     std::cout<<"here"<<1000.*this->get_parameter("linktrack_publish_interval").as_double()<<std::endl;
     int pub_interval = (int)(1000.*(this->get_parameter("linktrack_publish_interval").as_double()));
     RCLCPP_INFO(this->get_logger(),"Parameter [linktrack_publish_interval] set to [%d] milliseconds",pub_interval);
-    serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&Init::serialReadTimer, this));
-    // serial_thread_ = std::thread([this]() {
-    //   std::string buf;
-    //   while (rclcpp::ok() && !stop_serial_thread_) {
-    //     size_t n = this->serial_->read(buf, 1);
-    //     if (n > 0) {
-    //       protocol_extraction_->AddNewData(buf);
-    //     }
-    //   }
-    // });
+    serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Init::serialReadTimer, this));
     nodeframe_publisher_ =  this->create_wall_timer(std::chrono::milliseconds(pub_interval), std::bind(&Init::nodeFramePublisher, this));
     RCLCPP_INFO(this->get_logger(),"Initialized linktrack");
   }
-
-  // Init::~Init()
-  // {
-  //   stop_serial_thread_ = true;
-  //   if (serial_thread_.joinable()) {
-  //     serial_thread_.join();
-  //   }
-  // }
 
   void Init::nodeFramePublisher(){
     pub_anchor_frame0_->publish(this->buffer_msg_anchorframe0_);
