@@ -23,7 +23,8 @@ namespace linktrack
 
   Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial) : Node("linktrack_ros2")
   {
-    this->declare_parameter("linktrack_publish_interval", 0.04); // publish interval [seconds], 0.04s -> 40ms -> 25Hz
+    // UWB publish interval [seconds], 0.04s -> 40ms -> 25Hz
+    this->declare_parameter("linktrack_publish_interval", 0.04);
     serial_ = serial;
     protocol_extraction_ = protocol_extraction;
     initDataTransmission();
@@ -48,6 +49,7 @@ namespace linktrack
     std::cout<<"here"<<1000.*this->get_parameter("linktrack_publish_interval").as_double()<<std::endl;
     int pub_interval = (int)(1000.*(this->get_parameter("linktrack_publish_interval").as_double()));
     RCLCPP_INFO(this->get_logger(),"Parameter [linktrack_publish_interval] set to [%d] milliseconds",pub_interval);
+    // UWB serial read timer
     serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Init::serialReadTimer, this));
     nodeframe_publisher_ =  this->create_wall_timer(std::chrono::milliseconds(pub_interval), std::bind(&Init::nodeFramePublisher, this));
     RCLCPP_INFO(this->get_logger(),"Initialized linktrack");
