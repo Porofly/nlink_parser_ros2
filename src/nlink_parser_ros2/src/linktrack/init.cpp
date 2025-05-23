@@ -1,7 +1,7 @@
 #include "init.h"
-
 #include "nutils.h"
 #include "protocols.h"
+#include <thread>
 
 #define ARRAY_ASSIGN(DEST, SRC)                                                \
   for (size_t _CNT = 0; _CNT < sizeof(SRC) / sizeof(SRC[0]); ++_CNT)           \
@@ -12,21 +12,26 @@
 namespace linktrack
 {
   anchorframe0 g_msg_anchorframe0;
-  tagframe0 g_msg_tagframe0;
-  nodeframe0 g_msg_nodeframe0;
-  nodeframe1 g_msg_nodeframe1;
-  nodeframe2 g_msg_nodeframe2;
-  nodeframe3 g_msg_nodeframe3;
-  nodeframe5 g_msg_nodeframe5;
-  nodeframe6 g_msg_nodeframe6;
+  tagframe0    g_msg_tagframe0;
+  nodeframe0   g_msg_nodeframe0;
+  nodeframe1   g_msg_nodeframe1;
+  nodeframe2   g_msg_nodeframe2;
+  nodeframe3   g_msg_nodeframe3;
+  nodeframe5   g_msg_nodeframe5;
+  nodeframe6   g_msg_nodeframe6;
 
-
-  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial) : Node("linktrack_ros2")
+  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial)
+    : Node("linktrack_ros2")
+    , serial_thread_()
   {
-    // UWB publish interval [seconds], 0.04s -> 40ms -> 25Hz
+    // UWB publish interval [seconds], default 0.04s -> 25Hz
     this->declare_parameter("linktrack_publish_interval", 0.04);
+    double interval_s = this->get_parameter("linktrack_publish_interval").as_double();
+    int pub_interval = static_cast<int>(1000.0 * interval_s);
+
     serial_ = serial;
     protocol_extraction_ = protocol_extraction;
+
     initDataTransmission();
     initAnchorFrame0(protocol_extraction);
     initTagFrame0(protocol_extraction);
@@ -38,52 +43,69 @@ namespace linktrack
     initNodeFrame6(protocol_extraction);
 
     rclcpp::QoS qos(rclcpp::KeepLast(200));
-    pub_anchor_frame0_= create_publisher<anchorframe0>("nlink_linktrack_anchorframe0", qos);
-    pub_tag_frame0_= create_publisher<tagframe0>("nlink_linktrack_tagframe0", qos);
-    pub_node_frame0_= create_publisher<nodeframe0>("nlink_linktrack_nodeframe0", qos);
-    pub_node_frame1_= create_publisher<nodeframe1>("nlink_linktrack_nodeframe1", qos);
-    pub_node_frame2_= create_publisher<nodeframe2>("nlink_linktrack_nodeframe2", qos);
-    pub_node_frame3_= create_publisher<nodeframe3>("nlink_linktrack_nodeframe3", qos);
-    pub_node_frame5_= create_publisher<nodeframe5>("nlink_linktrack_nodeframe5", qos);
-    pub_node_frame6_= create_publisher<nodeframe6>("nlink_linktrack_nodeframe6", qos);
-    std::cout<<"here"<<1000.*this->get_parameter("linktrack_publish_interval").as_double()<<std::endl;
-    int pub_interval = (int)(1000.*(this->get_parameter("linktrack_publish_interval").as_double()));
-    RCLCPP_INFO(this->get_logger(),"Parameter [linktrack_publish_interval] set to [%d] milliseconds",pub_interval);
-    // UWB serial read timer
-    serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Init::serialReadTimer, this));
-    nodeframe_publisher_ =  this->create_wall_timer(std::chrono::milliseconds(pub_interval), std::bind(&Init::nodeFramePublisher, this));
-    RCLCPP_INFO(this->get_logger(),"Initialized linktrack");
+    pub_anchor_frame0_ = create_publisher<anchorframe0>("nlink_linktrack_anchorframe0", qos);
+    pub_tag_frame0_    = create_publisher<tagframe0>(   "nlink_linktrack_tagframe0",    qos);
+    pub_node_frame0_   = create_publisher<nodeframe0>(  "nlink_linktrack_nodeframe0",   qos);
+    pub_node_frame1_   = create_publisher<nodeframe1>(  "nlink_linktrack_nodeframe1",   qos);
+    pub_node_frame2_   = create_publisher<nodeframe2>(  "nlink_linktrack_nodeframe2",   qos);
+    pub_node_frame3_   = create_publisher<nodeframe3>(  "nlink_linktrack_nodeframe3",   qos);
+    pub_node_frame5_   = create_publisher<nodeframe5>(  "nlink_linktrack_nodeframe5",   qos);
+    pub_node_frame6_   = create_publisher<nodeframe6>(  "nlink_linktrack_nodeframe6",   qos);
+
+    RCLCPP_INFO(this->get_logger(), "Parameter [linktrack_publish_interval] set to [%d] milliseconds", pub_interval);
+
+    // Start serial read thread
+    startSerialReadThread();
+
+    // Publisher timer remains
+    nodeframe_publisher_ = create_wall_timer(
+      std::chrono::milliseconds(pub_interval),
+      std::bind(&Init::nodeFramePublisher, this));
+
+    RCLCPP_INFO(this->get_logger(), "Initialized linktrack");
   }
 
-  void Init::nodeFramePublisher(){
-    pub_anchor_frame0_->publish(this->buffer_msg_anchorframe0_);
-    pub_tag_frame0_->publish(this->buffer_msg_tagframe0_);
-    pub_node_frame0_->publish(this->buffer_msg_nodeframe0_);
-    pub_node_frame1_->publish(this->buffer_msg_nodeframe1_);
-    pub_node_frame2_->publish(this->buffer_msg_nodeframe2_);
-    pub_node_frame3_->publish(this->buffer_msg_nodeframe3_);
-    pub_node_frame5_->publish(this->buffer_msg_nodeframe5_);
-    pub_node_frame6_->publish(this->buffer_msg_nodeframe6_);
-  }
-
-  void Init::serialReadTimer(){
-    auto available_bytes = this->serial_->available();
-    std::string str_received;
-    if (available_bytes)
-    {
-      this->serial_->read(str_received, available_bytes);
-      this->protocol_extraction_->AddNewData(str_received);
+  Init::~Init()
+  {
+    if (serial_thread_.joinable()) {
+      serial_thread_.join();
     }
+  }
+
+  void Init::startSerialReadThread()
+  {
+    serial_thread_ = std::thread([this]() {
+      std::string buf;
+      while (rclcpp::ok()) {
+        try {
+          this->serial_->read(buf, 1);
+          protocol_extraction_->AddNewData(buf);
+        } catch (const std::exception &e) {
+          RCLCPP_ERROR(this->get_logger(), "Serial read error: %s", e.what());
+        }
+      }
+    });
+  }
+
+  void Init::nodeFramePublisher()
+  {
+    pub_anchor_frame0_->publish(buffer_msg_anchorframe0_);
+    pub_tag_frame0_   ->publish(buffer_msg_tagframe0_);
+    pub_node_frame0_  ->publish(buffer_msg_nodeframe0_);
+    pub_node_frame1_  ->publish(buffer_msg_nodeframe1_);
+    pub_node_frame2_  ->publish(buffer_msg_nodeframe2_);
+    pub_node_frame3_  ->publish(buffer_msg_nodeframe3_);
+    pub_node_frame5_  ->publish(buffer_msg_nodeframe5_);
+    pub_node_frame6_  ->publish(buffer_msg_nodeframe6_);
   }
 
   void Init::initDataTransmission()
   {
-    auto callback = [this](const std_msgs::msg::String::SharedPtr msg) -> void {
-    if (this->serial_)
-      this->serial_->write(msg->data);
+    auto callback = [this](const std_msgs::msg::String::SharedPtr msg) {
+      if (this->serial_) this->serial_->write(msg->data);
     };
-    dt_sub_ =
-        create_subscription<std_msgs::msg::String>("nlink_linktrack_data_transmission", 1000, callback);
+    dt_sub_ = create_subscription<std_msgs::msg::String>(
+      "nlink_linktrack_data_transmission", 1000, callback);
   }
 
   void Init::initAnchorFrame0(NProtocolExtracter *protocol_extraction)
