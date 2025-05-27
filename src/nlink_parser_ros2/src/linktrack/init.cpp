@@ -22,7 +22,7 @@ namespace linktrack
 
     initNodeFrame2(protocol_extraction);
     rclcpp::QoS qos(rclcpp::KeepLast(200));
-    pub_node_frame2_   = create_publisher<nodeframe2>(  "nlink_linktrack_nodeframe2",   qos);
+    pub_node_frame2_   = create_publisher<nodeframe2>(  "drone1/nlink_linktrack_nodeframe2",   qos);
 
     // Start serial read thread
     startSerialReadThread();
