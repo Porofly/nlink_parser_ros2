@@ -20,11 +20,14 @@ namespace linktrack
     serial_ = serial;
     protocol_extraction_ = protocol_extraction;
 
-    initNodeFrame2(protocol_extraction);
-    rclcpp::QoS qos(rclcpp::KeepLast(200));
-    pub_node_frame2_   = create_publisher<nodeframe2>(  "drone1/nlink_linktrack_nodeframe2",   qos);
+    this->declare_parameter<int>("system_id", 1);
+    int system_id = this->get_parameter("system_id").as_int();
 
-    // Start serial read thread
+    initNodeFrame2(protocol_extraction);
+    rclcpp::QoS qos = rclcpp::SensorDataQoS();
+    std::string topic_name = "drone" + std::to_string(system_id) + "/nlink_linktrack_nodeframe2";
+    pub_node_frame2_ = create_publisher<nodeframe2>(topic_name, qos);
+
     startSerialReadThread();
 
     RCLCPP_INFO(this->get_logger(), "Initialized linktrack");
