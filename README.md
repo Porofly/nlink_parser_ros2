@@ -14,7 +14,6 @@ This is a port of the [nlink_parser](https://github.com/nooploop-dev/nlink_parse
 7. Type "sudo make install" to make the driver work permanently
 8. Type "sudo make uninstall" to remove the driver
 
-
 ### Build
 
 ```
@@ -34,4 +33,24 @@ For LinkTrack AoA:
 
 ```
 ros2 launch nlink_parser_ros2 linktrack_aoa.launch.py
+```
+
+### Error fix
+If the following error occurs,
+```
+warning: the compiler differs from the one used to build the kernel
+  The kernel was built by: x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+  You are using:           gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+  CC [M]  ch343.o
+ch343.c:61:10: fatal error: asm/unaligned.h: 그런 파일이나 디렉터리가 없습니다
+   61 | #include <asm/unaligned.h>
+      |          ^~~~~~~~~~~~~~~~~
+compilation terminated.
+
+```
+1. open file "ch343ser_linux/driver/ch343.c"
+2. edit 61 line
+```
+#include <asm/unaligned.h>     // Delete
+#include <linux/unaligned.h>   // New
 ```
