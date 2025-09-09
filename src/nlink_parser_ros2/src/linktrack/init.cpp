@@ -11,7 +11,7 @@
 
 namespace linktrack
 {
-  nodeframe2   g_msg_nodeframe2;
+  nodeframe3   g_msg_nodeframe3;
 
   Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial)
     : Node("linktrack_ros2")
@@ -23,10 +23,10 @@ namespace linktrack
     this->declare_parameter<int>("system_id", 1);
     int system_id = this->get_parameter("system_id").as_int();
 
-    initNodeFrame2(protocol_extraction);
+    initNodeFrame3(protocol_extraction);
     rclcpp::QoS qos = rclcpp::SensorDataQoS();
-    std::string topic_name = "drone" + std::to_string(system_id) + "/nlink_linktrack_nodeframe2";
-    pub_node_frame2_ = create_publisher<nodeframe2>(topic_name, qos);
+    std::string topic_name = "drone" + std::to_string(system_id) + "/nlink_linktrack_nodeframe3";
+    pub_node_frame3_ = create_publisher<nodeframe3>(topic_name, qos);
 
     startSerialReadThread();
 
@@ -65,14 +65,14 @@ namespace linktrack
     });
   }
 
-  void Init::initNodeFrame2(NProtocolExtracter *protocol_extraction)
+  void Init::initNodeFrame3(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame2;
+    auto protocol = new NLT_ProtocolNodeFrame3;
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback([=] {
 
-      const auto &data = g_nlt_nodeframe2.result;
-      auto &msg_data = g_msg_nodeframe2;
+      const auto &data = g_nlt_nodeframe3.result;
+      auto &msg_data = g_msg_nodeframe3;
       auto &msg_nodes = msg_data.nodes;
 
       msg_data.role = data.role;
@@ -80,13 +80,6 @@ namespace linktrack
       msg_data.local_time = data.local_time;
       msg_data.system_time = data.system_time;
       msg_data.voltage = data.voltage;
-      ARRAY_ASSIGN(msg_data.pos_3d, data.pos_3d)
-      ARRAY_ASSIGN(msg_data.eop_3d, data.eop_3d)
-      ARRAY_ASSIGN(msg_data.vel_3d, data.vel_3d)
-      ARRAY_ASSIGN(msg_data.imu_gyro_3d, data.imu_gyro_3d)
-      ARRAY_ASSIGN(msg_data.imu_acc_3d, data.imu_acc_3d)
-      ARRAY_ASSIGN(msg_data.angle_3d, data.angle_3d)
-      ARRAY_ASSIGN(msg_data.quaternion, data.quaternion)
 
       msg_nodes.resize(data.valid_node_count);
       for (size_t i = 0; i < data.valid_node_count; ++i)
@@ -99,7 +92,7 @@ namespace linktrack
         msg_node.fp_rssi = node->fp_rssi;
         msg_node.rx_rssi = node->rx_rssi;
       }
-      pub_node_frame2_->publish(msg_data);
+      pub_node_frame3_->publish(msg_data);
     });
   }
 
