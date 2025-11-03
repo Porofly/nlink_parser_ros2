@@ -4,15 +4,25 @@
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
-  // std::cout<<sizeof(argv)<<" dfg " <<argv[1]<<'\n';
+
+  if (argc < 2) {
+    RCLCPP_ERROR(rclcpp::get_logger("linktrack_aoa_main"),
+                 "Usage: %s <param_file_path>", argv[0]);
+    return EXIT_FAILURE;
+  }
+
   serial::Serial serial;
-  initSerial(&serial, argv[1]);
+  if (!initSerial(serial, std::string(argv[1]))) {
+    RCLCPP_ERROR(rclcpp::get_logger("linktrack_aoa_main"),
+                 "Failed to initialize serial port");
+    return EXIT_FAILURE;
+  }
+
   NProtocolExtracter protocol_extraction;
+  auto linktrack_aoa_node = std::make_shared<linktrack_aoa::Init>(&protocol_extraction, &serial);
 
-  auto aoaInit = std::make_shared<linktrack_aoa::Init>(&protocol_extraction, &serial);
-
-  rclcpp::spin(aoaInit);
-
+  rclcpp::spin(linktrack_aoa_node);
   rclcpp::shutdown();
+
   return EXIT_SUCCESS;
 }

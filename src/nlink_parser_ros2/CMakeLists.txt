@@ -71,7 +71,6 @@ add_executable(${LINKTRACK_NAME}
     src/linktrack/protocols.cpp
     )
 target_link_libraries(${LINKTRACK_NAME}
-   ${catkin_LIBRARIES}
     ${nutils}
     )
 # rosidl_target_interfaces(${LINKTRACK_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")

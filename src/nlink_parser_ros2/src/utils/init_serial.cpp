@@ -2,95 +2,70 @@
 #include <yaml-cpp/yaml.h>
 #include <yaml-cpp/exceptions.h>
 #include "rclcpp/rclcpp.hpp"
-#include <iostream>
 #include <fstream>
-#include <string>
-/*
-void enumerate_ports() {
-  auto devices_found = serial::list_ports();
-  auto iter = devices_found.begin();
-  while (iter != devices_found.end()) {
-    serial::PortInfo device = *iter++;
 
-    printf("(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(),
-           device.hardware_id.c_str());
-  }
-  std::string test;
-  test.clear();
-}
-*/
-
-bool initSerial(serial::Serial *serial, char *param_file_path)
+bool initSerial(serial::Serial& serial, const std::string& param_file_path)
 {
+  auto logger = rclcpp::get_logger("initSerial");
+
   try
   {
-    YAML::Node port_config = YAML::LoadFile(param_file_path)["port_config"];
-    YAML::const_iterator it = port_config.begin();
-    std::map<std::string, std::string> port_config_dict;
-    for (; it != port_config.end(); ++it)
-    {
-        auto key = it->first.as<std::string>();
-        port_config_dict[key] = it->second.as<std::string>();
+    std::ifstream file_check(param_file_path);
+    if (!file_check.good()) {
+      RCLCPP_ERROR(logger, "Parameter file not found: %s", param_file_path.c_str());
+      return false;
     }
-    // auto get_value = [&](const std::string& key)-> void{
-    //   auto _value = port_config_dict.find(key);
-    //   if(_value==port_config_dict.end()){
-    //     std::cout<< "Failed to get param: "<< key<<", please check the config file and retry."<<std::endl;
-    //     exit(EXIT_FAILURE);
-    //   } else {
-    //     return _value->second();
-    //   }
-    // };
 
-     
-    if(port_config_dict.find("port_name")==port_config_dict.end() || port_config_dict.find("baudrate")==port_config_dict.end()){
-      std::cout<< "Failed to get a param please check the config file and retry."<<std::endl;
-      exit(EXIT_FAILURE);
+    YAML::Node config = YAML::LoadFile(param_file_path);
+
+    if (!config["port_config"]) {
+      RCLCPP_ERROR(logger, "Missing 'port_config' section in YAML file");
+      return false;
     }
-    std::string port_name, baudrate;
-    auto search = port_config_dict.find("port_name");
-    if(search==port_config_dict.end()){
-      port_name = "/dev/ttyUSB1";
-    } else {
-      port_name = search->second;
-    }
-    
-    search = port_config_dict.find("baudrate");
-    if(search==port_config_dict.end()){
-      baudrate = "921600";
-    } else {
-      baudrate = search->second;    
-    }
-        
-  
-    serial->setPort(port_name);
-    serial->setBaudrate(static_cast<uint32_t>(std::stoi(baudrate)));
-  
-    std::cout<< "try to open serial port with port: " << port_name << " baud rate: "<< baudrate << std::endl;
+
+    YAML::Node port_config = config["port_config"];
+
+    std::string port_name = port_config["port_name"]
+        ? port_config["port_name"].as<std::string>()
+        : "/dev/ttyUSB1";
+
+    std::string baudrate_str = port_config["baudrate"]
+        ? port_config["baudrate"].as<std::string>()
+        : "921600";
+
+    uint32_t baudrate = static_cast<uint32_t>(std::stoi(baudrate_str));
+
+    serial.setPort(port_name);
+    serial.setBaudrate(baudrate);
+
+    RCLCPP_INFO(logger, "Opening serial port: %s @ %u baud", port_name.c_str(), baudrate);
+
     auto timeout = serial::Timeout::simpleTimeout(10);
-    // without setTimeout,serial can not write any data
-    // https://stackoverflow.com/questions/52048670/can-read-but-cannot-write-serial-ports-on-ubuntu-16-04/52051660?noredirect=1#comment91056825_52051660
-    serial->setTimeout(timeout);
-    serial->open();
+    serial.setTimeout(timeout);
+    serial.open();
 
-    if (serial->isOpen())
+    if (serial.isOpen())
     {
-      std::cout<< "Serial port opened successfully."<<std::endl;
+      RCLCPP_INFO(logger, "Serial port opened successfully");
+      return true;
     }
     else
     {
-      std::cout<< "Failed to open serial port, please check and retry."<<std::endl;
-      exit(EXIT_FAILURE);
+      RCLCPP_ERROR(logger, "Failed to open serial port");
+      return false;
     }
-      return true;
   }
-  catch (const YAML::BadFile &e){
-    std::cout<< "Exception raised: parameter file ["<< param_file_path <<"] missing"<<std::endl;  
-    exit(EXIT_FAILURE);
+  catch (const YAML::BadFile& e) {
+    RCLCPP_ERROR(logger, "YAML file not found: %s", e.what());
+    return false;
   }
-  catch (const std::exception &e)
+  catch (const YAML::ParserException& e) {
+    RCLCPP_ERROR(logger, "YAML parsing error: %s", e.what());
+    return false;
+  }
+  catch (const std::exception& e)
   {
-    std::cout<< "Exception raised : "<<e.what()<<std::endl;
-    exit(EXIT_FAILURE);
+    RCLCPP_ERROR(logger, "Exception: %s", e.what());
+    return false;
   }
 }

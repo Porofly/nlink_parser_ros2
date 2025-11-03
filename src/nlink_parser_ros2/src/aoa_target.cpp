@@ -1,7 +1,6 @@
-#include <math.h> 
-#include <chrono> 
+#include <cmath>
+#include <chrono>
 #include <ctime>
-
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -18,13 +17,11 @@ public:
    explicit Listener()
   : Node("nlink_vizualizer")
   {
-    
-    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
     auto clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
 
     this->declare_parameter("node_ns", "linktrack_aoa");
     this->declare_parameter("frame_id", "base_link");
-    this->declare_parameter("node_distance", .25);
+    this->declare_parameter("node_distance", 0.25);
 
     auto callback_linktrack_node =
       [this, clock](const aoa_nodeframe::SharedPtr msg) -> void

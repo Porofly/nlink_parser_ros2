@@ -40,8 +40,8 @@ namespace linktrack_aoa
     initDataTransmission();
     initNodeFrame0(protocol_extraction);
     InitAoaNodeFrame0(protocol_extraction);
-    float pub_interval = 1000./this->get_parameter("pub_frequency").as_double();
-    serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds((int)pub_interval), std::bind(&Init::serialReadTimer, this));
+    float pub_interval = 1000.0f / this->get_parameter("pub_frequency").as_double();
+    serial_read_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(pub_interval)), std::bind(&Init::serialReadTimer, this));
     RCLCPP_INFO(this->get_logger(),"Initialized linktrack AoA");
   }
 
@@ -68,9 +68,8 @@ namespace linktrack_aoa
 
   void Init::initNodeFrame0(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame0;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame0>(protocol_extraction);
+    protocol->SetHandleDataCallback([this, protocol]() {
       if (!publishers_[protocol])
       {
         auto topic = "nlink_linktrack_nodeframe0";
@@ -102,9 +101,8 @@ namespace linktrack_aoa
 
   void Init::InitAoaNodeFrame0(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLTAoa_ProtocolNodeFrame0;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
+    auto protocol = protocol_manager_.addProtocol<NLTAoa_ProtocolNodeFrame0>(protocol_extraction);
+    protocol->SetHandleDataCallback([this, protocol]() {
       if (!publishers_[protocol])
       {
         auto topic = "nlink_linktrack_aoa_nodeframe0";
