@@ -1,4 +1,4 @@
-#include <math.h> 
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -15,8 +15,6 @@ public:
    explicit Listener()
   : Node("nlink_vizualizer")
   {
-    
-    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
     auto clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
     auto callback =
       [this, clock](const aoa_nodeframe::SharedPtr msg) -> void

@@ -14,6 +14,7 @@
 #include <nlink_parser_ros2_interfaces/msg/linktrack_nodeframe0.hpp>
 
 #include "protocol_extracter/nprotocol_extracter.h"
+#include "protocol_manager.h"
 
 namespace linktrack_aoa
 {
@@ -27,6 +28,7 @@ namespace linktrack_aoa
     rclcpp::TimerBase::SharedPtr serial_read_timer_;
     serial::Serial *g_serial;
     NProtocolExtracter* protocol_extraction_;
+    ProtocolManager protocol_manager_;
     void DTCallback(const std_msgs::msg::String::SharedPtr msg);
     void serialReadTimer();
     void initDataTransmission();

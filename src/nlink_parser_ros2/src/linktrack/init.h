@@ -19,6 +19,7 @@
 
 #include "nlink_unpack/nlink_utils.h"
 #include "protocol_extracter/nprotocol_extracter.h"
+#include "protocol_manager.h"
 
 using anchorframe0 = nlink_parser_ros2_interfaces::msg::LinktrackAnchorframe0;
 using tagframe0 = nlink_parser_ros2_interfaces::msg::LinktrackTagframe0;
@@ -41,6 +42,7 @@ namespace linktrack
 
   private:
     NProtocolExtracter* protocol_extraction_;
+    ProtocolManager protocol_manager_;
     anchorframe0 buffer_msg_anchorframe0_;
     tagframe0 buffer_msg_tagframe0_;
     nodeframe0 buffer_msg_nodeframe0_;

@@ -45,8 +45,7 @@ namespace linktrack
     pub_node_frame3_= create_publisher<nodeframe3>("nlink_linktrack_nodeframe3", qos);
     pub_node_frame5_= create_publisher<nodeframe5>("nlink_linktrack_nodeframe5", qos);
     pub_node_frame6_= create_publisher<nodeframe6>("nlink_linktrack_nodeframe6", qos);
-    std::cout<<"here"<<1000.*this->get_parameter("linktrack_publish_interval").as_double()<<std::endl;
-    int pub_interval = (int)(1000.*(this->get_parameter("linktrack_publish_interval").as_double()));
+    int pub_interval = static_cast<int>(1000.0 * this->get_parameter("linktrack_publish_interval").as_double());
     RCLCPP_INFO(this->get_logger(),"Parameter [linktrack_publish_interval] set to [%d] milliseconds",pub_interval);
     serial_read_timer_ =  this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Init::serialReadTimer, this));
     nodeframe_publisher_ =  this->create_wall_timer(std::chrono::milliseconds(pub_interval), std::bind(&Init::nodeFramePublisher, this));
@@ -86,10 +85,8 @@ namespace linktrack
 
   void Init::initAnchorFrame0(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolAnchorFrame0;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
-
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolAnchorFrame0>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       auto data = nlt_anchorframe0_.result;
       g_msg_anchorframe0.role = data.role;
       g_msg_anchorframe0.id = data.id;
@@ -115,10 +112,8 @@ namespace linktrack
 
   void Init::initTagFrame0(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolTagFrame0;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
-
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolTagFrame0>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       const auto &data = g_nlt_tagframe0.result;
       auto &msg_data = g_msg_tagframe0;
 
@@ -142,10 +137,8 @@ namespace linktrack
 
   void Init::initNodeFrame0(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame0;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
-
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame0>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       const auto &data = g_nlt_nodeframe0.result;
       auto &msg_data = g_msg_nodeframe0;
       auto &msg_nodes = msg_data.nodes;
@@ -170,10 +163,8 @@ namespace linktrack
 
   void Init::initNodeFrame1(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame1;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
-
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame1>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       const auto &data = g_nlt_nodeframe1.result;
       auto &msg_data = g_msg_nodeframe1;
       auto &msg_nodes = msg_data.nodes;
@@ -200,10 +191,8 @@ namespace linktrack
 
   void Init::initNodeFrame2(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame2;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
-
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame2>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       const auto &data = g_nlt_nodeframe2.result;
       auto &msg_data = g_msg_nodeframe2;
       auto &msg_nodes = msg_data.nodes;
@@ -241,9 +230,8 @@ namespace linktrack
 
   void Init::initNodeFrame3(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame3;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame3>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       // if (!publishers_[protocol])
       // {
       //   auto topic = "nlink_linktrack_nodeframe3";
@@ -280,9 +268,8 @@ namespace linktrack
 
   void Init::initNodeFrame5(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame5;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame5>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       // if (!publishers_[protocol])
       // {
       //   auto topic = "nlink_linktrack_nodeframe5";
@@ -319,9 +306,8 @@ namespace linktrack
 
   void Init::initNodeFrame6(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = new NLT_ProtocolNodeFrame6;
-    protocol_extraction->AddProtocol(protocol);
-    protocol->SetHandleDataCallback([=] {
+    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame6>(protocol_extraction);
+    protocol->SetHandleDataCallback([this]() {
       // if (!publishers_[protocol])
       // {
       //   auto topic = "nlink_linktrack_nodeframe6";
