@@ -14,7 +14,7 @@
 #include <nlink_parser_ros2_interfaces/msg/linktrack_nodeframe0.hpp>
 
 #include "protocol_extracter/nprotocol_extracter.h"
-#include "utils/protocol_manager.h"
+#include "protocol_manager.h"
 
 namespace linktrack_aoa
 {
