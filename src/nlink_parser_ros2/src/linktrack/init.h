@@ -23,25 +23,6 @@ namespace linktrack
     ~Init();
 
   private:
-    NProtocolExtracter* protocol_extraction_;
-    ProtocolManager protocol_manager_;
-    anchorframe0 buffer_msg_anchorframe0_;
-    tagframe0 buffer_msg_tagframe0_;
-    nodeframe0 buffer_msg_nodeframe0_;
-    nodeframe1 buffer_msg_nodeframe1_;
-    nodeframe2 buffer_msg_nodeframe2_;
-    nodeframe3 buffer_msg_nodeframe3_;
-    nodeframe5 buffer_msg_nodeframe5_;
-    nodeframe6 buffer_msg_nodeframe6_;
-
-    void initDataTransmission();
-    void serialReadTimer();
-    void nodeFramePublisher();
-    void initAnchorFrame0(NProtocolExtracter *protocol_extraction);
-    void initTagFrame0(NProtocolExtracter *protocol_extraction);
-    void initNodeFrame0(NProtocolExtracter *protocol_extraction);
-    void initNodeFrame1(NProtocolExtracter *protocol_extraction);
-    void initNodeFrame2(NProtocolExtracter *protocol_extraction);
     void initNodeFrame3(NProtocolExtracter *protocol_extraction);
     void startSerialReadThread();
 
