@@ -1,7 +1,7 @@
 #include "init.h"
-
 #include "nutils.h"
 #include "protocols.h"
+#include <thread>
 
 #define ARRAY_ASSIGN(DEST, SRC)                                                \
   for (size_t _CNT = 0; _CNT < sizeof(SRC) / sizeof(SRC[0]); ++_CNT)           \
@@ -11,30 +11,22 @@
 
 namespace linktrack
 {
-  anchorframe0 g_msg_anchorframe0;
-  tagframe0 g_msg_tagframe0;
-  nodeframe0 g_msg_nodeframe0;
-  nodeframe1 g_msg_nodeframe1;
-  nodeframe2 g_msg_nodeframe2;
-  nodeframe3 g_msg_nodeframe3;
-  nodeframe5 g_msg_nodeframe5;
-  nodeframe6 g_msg_nodeframe6;
+  nodeframe3   g_msg_nodeframe3;
 
-
-  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial) : Node("linktrack_ros2")
+  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial)
+    : Node("linktrack_ros2")
+    , serial_thread_()
   {
-    this->declare_parameter("linktrack_publish_interval", 2.);
     serial_ = serial;
     protocol_extraction_ = protocol_extraction;
-    initDataTransmission();
-    initAnchorFrame0(protocol_extraction);
-    initTagFrame0(protocol_extraction);
-    initNodeFrame0(protocol_extraction);
-    initNodeFrame1(protocol_extraction);
-    initNodeFrame2(protocol_extraction);
+
+    this->declare_parameter<int>("system_id", 1);
+    int system_id = this->get_parameter("system_id").as_int();
+
     initNodeFrame3(protocol_extraction);
-    initNodeFrame5(protocol_extraction);
-    initNodeFrame6(protocol_extraction);
+    rclcpp::QoS qos = rclcpp::SensorDataQoS();
+    std::string topic_name = "drone" + std::to_string(system_id) + "/nlink_linktrack_nodeframe3";
+    pub_node_frame3_ = create_publisher<nodeframe3>(topic_name, qos);
 
     rclcpp::QoS qos(rclcpp::KeepLast(200));
     pub_anchor_frame0_= create_publisher<anchorframe0>("nlink_linktrack_anchorframe0", qos);
@@ -52,36 +44,17 @@ namespace linktrack
     RCLCPP_INFO(this->get_logger(),"Initialized linktrack");
   }
 
-  void Init::nodeFramePublisher(){
-    pub_anchor_frame0_->publish(this->buffer_msg_anchorframe0_);
-    pub_tag_frame0_->publish(this->buffer_msg_tagframe0_);
-    pub_node_frame0_->publish(this->buffer_msg_nodeframe0_);
-    pub_node_frame1_->publish(this->buffer_msg_nodeframe1_);
-    pub_node_frame2_->publish(this->buffer_msg_nodeframe2_);
-    pub_node_frame3_->publish(this->buffer_msg_nodeframe3_);
-    pub_node_frame5_->publish(this->buffer_msg_nodeframe5_);
-    pub_node_frame6_->publish(this->buffer_msg_nodeframe6_);
-  }
-
-  void Init::serialReadTimer(){
-    auto available_bytes = this->serial_->available();
-    std::string str_received;
-    if (available_bytes)
-    {
-      this->serial_->read(str_received, available_bytes);
-      this->protocol_extraction_->AddNewData(str_received);
+  Init::~Init()
+  {
+    if (serial_thread_.joinable()) {
+      serial_thread_.join();
     }
   }
 
-  void Init::initDataTransmission()
+  void Init::startSerialReadThread()
   {
-    auto callback = [this](const std_msgs::msg::String::SharedPtr msg) -> void {
-    if (this->serial_)
-      this->serial_->write(msg->data);
-    };
-    dt_sub_ =
-        create_subscription<std_msgs::msg::String>("nlink_linktrack_data_transmission", 1000, callback);
-  }
+    // define a delay for serial read
+    std::chrono::milliseconds delay_ms(40);
 
   void Init::initAnchorFrame0(NProtocolExtracter *protocol_extraction)
   {
@@ -261,8 +234,7 @@ namespace linktrack
         msg_node.fp_rssi = node->fp_rssi;
         msg_node.rx_rssi = node->rx_rssi;
       }
-      // pub_node_frame3_->publish(msg_data);
-      buffer_msg_nodeframe3_ = msg_data;
+      pub_node_frame3_->publish(msg_data);
     });
   }
 
