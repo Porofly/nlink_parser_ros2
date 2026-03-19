@@ -23,9 +23,12 @@ namespace linktrack
     this->declare_parameter<int>("system_id", 1);
     int system_id = this->get_parameter("system_id").as_int();
 
+    this->declare_parameter<int>("tag_id", 1);
+    int tag_id = this->get_parameter("tag_id").as_int();
+
     initNodeFrame3(protocol_extraction);
     rclcpp::QoS qos = rclcpp::SensorDataQoS();
-    std::string topic_name = "drone" + std::to_string(system_id) + "/nlink_linktrack_nodeframe3";
+    std::string topic_name = "drone" + std::to_string(system_id) +"/tag" + std::to_string(tag_id) + "/nlink_linktrack_nodeframe3";
     pub_node_frame3_ = create_publisher<nodeframe3>(topic_name, qos);
 
     startSerialReadThread();
@@ -67,16 +70,10 @@ namespace linktrack
 
   void Init::initNodeFrame3(NProtocolExtracter *protocol_extraction)
   {
-    auto protocol = protocol_manager_.addProtocol<NLT_ProtocolNodeFrame3>(protocol_extraction);
-    protocol->SetHandleDataCallback([this]() {
-      // if (!publishers_[protocol])
-      // {
-      //   auto topic = "nlink_linktrack_nodeframe3";
-      //   rclcpp::QoS qos(rclcpp::KeepLast(200));
-      //   publishers_[protocol] =
-      //          create_publisher<nlink_parser_ros2_interfaces::msg::LinktrackNodeframe3>(topic, qos);
-      //   TopicAdvertisedTip(topic);
-      // }
+    auto protocol = new NLT_ProtocolNodeFrame3;
+    protocol_extraction->AddProtocol(protocol);
+    protocol->SetHandleDataCallback([=] {
+
       const auto &data = g_nlt_nodeframe3.result;
       auto &msg_data = g_msg_nodeframe3;
       auto &msg_nodes = msg_data.nodes;
