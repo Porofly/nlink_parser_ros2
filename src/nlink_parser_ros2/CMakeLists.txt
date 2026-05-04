@@ -8,6 +8,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(nlink_parser_ros2_interfaces REQUIRED)
 find_package(serial REQUIRED)
 
@@ -44,6 +45,7 @@ ament_target_dependencies(${nutils}
   "nlink_parser_ros2_interfaces"
   "std_msgs"
   "geometry_msgs"
+  "diagnostic_msgs"
 )
 
 set(LINKTRACK_NAME "linktrack")
@@ -57,6 +59,7 @@ ament_target_dependencies(${LINKTRACK_NAME}
   "rclcpp"
   "nlink_parser_ros2_interfaces"
   "std_msgs"
+  "diagnostic_msgs"
 )
 
 set(LINKTRACK_AOA_NAME "linktrack_aoa")
@@ -71,6 +74,7 @@ ament_target_dependencies(${LINKTRACK_AOA_NAME}
   "nlink_parser_ros2_interfaces"
   "std_msgs"
   "geometry_msgs"
+  "diagnostic_msgs"
 )
 
 add_executable(nlink_viz_ros2 src/aoa_target.cpp)

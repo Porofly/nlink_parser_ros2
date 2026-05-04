@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "std_msgs/msg/string.hpp"
 #include <nlink_parser_ros2_interfaces/msg/linktrack_anchorframe0.hpp>
 #include <nlink_parser_ros2_interfaces/msg/linktrack_nodeframe0.hpp>
@@ -51,9 +52,15 @@ namespace linktrack
     ProtocolManager protocol_manager_;
     std::string frame_id_;
 
-    bool tryOpenSerial();
+    bool tryOpenSerial(bool quiet = false);
     void initDataTransmission();
     void serialReadTimer();
+    void onParameterEvent(const std::vector<rclcpp::Parameter>& params);
+    rcl_interfaces::msg::SetParametersResult onSetParameters(
+        const std::vector<rclcpp::Parameter>& params);
+    void diagnosticsTimer();
+    void noteFrameReceived() { last_frame_time_ = this->now(); }
+
     void initAnchorFrame0();
     void initTagFrame0();
     void initNodeFrame0();
@@ -65,6 +72,15 @@ namespace linktrack
 
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr dt_sub_;
     rclcpp::TimerBase::SharedPtr serial_read_timer_;
+    rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+    rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr pub_diagnostics_;
+    OnSetParametersCallbackHandle::SharedPtr param_cb_handle_;
+
+    // Watchdog state: last_frame_time_ is touched from each frame callback;
+    // diagnosticsTimer compares it against the configured warn/error timeouts.
+    rclcpp::Time last_frame_time_;
+    double frame_timeout_warn_sec_{1.0};
+    double frame_timeout_error_sec_{5.0};
 
     rclcpp::Publisher<anchorframe0>::SharedPtr pub_anchor_frame0_;
     rclcpp::Publisher<tagframe0>::SharedPtr pub_tag_frame0_;

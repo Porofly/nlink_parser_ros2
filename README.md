@@ -80,11 +80,19 @@ ros2 launch nlink_parser_ros2 linktrack.launch.py
 ros2 launch nlink_parser_ros2 linktrack_aoa.launch.py
 ```
 
-Override parameters from the command line:
+Override parameters from the command line. Both launch files expose
+`port_name`, `baudrate`, `frame_id`, `serial_read_rate_hz`, and
+`params_file` as launch arguments:
 
 ```bash
-ros2 launch nlink_parser_ros2 linktrack.launch.py \
-    --ros-args -p port_name:=/dev/ttyACM0 -p frame_id:=base_link
+# Override individual parameters
+ros2 launch nlink_parser_ros2 linktrack.launch.py port_name:=/dev/ttyACM0 frame_id:=base_link
+
+# Use a custom parameter file instead of the bundled default
+ros2 launch nlink_parser_ros2 linktrack.launch.py params_file:=/path/to/my.yaml
+
+# Or run the executable directly with --ros-args (e.g. for quick debugging)
+ros2 run nlink_parser_ros2 linktrack --ros-args -p port_name:=/dev/ttyACM0
 ```
 
 ## Parameters

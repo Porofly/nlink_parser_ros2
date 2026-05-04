@@ -80,11 +80,19 @@ ros2 launch nlink_parser_ros2 linktrack.launch.py
 ros2 launch nlink_parser_ros2 linktrack_aoa.launch.py
 ```
 
-명령줄에서 파라미터 오버라이드:
+명령줄에서 파라미터 오버라이드. 두 launch 파일 모두 `port_name`,
+`baudrate`, `frame_id`, `serial_read_rate_hz`, `params_file`을 launch
+인자로 노출합니다:
 
 ```bash
-ros2 launch nlink_parser_ros2 linktrack.launch.py \
-    --ros-args -p port_name:=/dev/ttyACM0 -p frame_id:=base_link
+# 개별 파라미터 오버라이드
+ros2 launch nlink_parser_ros2 linktrack.launch.py port_name:=/dev/ttyACM0 frame_id:=base_link
+
+# 번들 yaml 대신 사용자 정의 yaml 사용
+ros2 launch nlink_parser_ros2 linktrack.launch.py params_file:=/path/to/my.yaml
+
+# 또는 실행 파일을 직접 실행 (빠른 디버깅용)
+ros2 run nlink_parser_ros2 linktrack --ros-args -p port_name:=/dev/ttyACM0
 ```
 
 ## 파라미터

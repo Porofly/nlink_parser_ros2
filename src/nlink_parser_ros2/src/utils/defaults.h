@@ -36,6 +36,15 @@ constexpr size_t kSubscriptionQueueDepth = 10;
 // Throttle period (ms) for repeated error logs from the serial path.
 constexpr int64_t kErrorThrottleMs = 2000;
 
+// Liveness watchdog. The node tracks the time of the most recent parsed
+// frame and publishes diagnostic_msgs/DiagnosticArray on /diagnostics at
+// kDiagnosticsRateHz. If the gap since the last frame exceeds the WARN
+// threshold the level transitions OK -> WARN; past the ERROR threshold
+// it becomes ERROR. Tune via parameters at launch.
+constexpr double kDiagnosticsRateHz = 1.0;
+constexpr double kFrameTimeoutWarnSec = 1.0;
+constexpr double kFrameTimeoutErrorSec = 5.0;
+
 }  // namespace nlink_parser_ros2::defaults
 
 #endif  // NLINK_PARSER_ROS2_DEFAULTS_H
