@@ -23,15 +23,22 @@ namespace linktrack_aoa
   {
   public:
     Init();
-    bool ok() const { return serial_.isOpen(); }
+    bool ok() const { return initialized_; }
 
   private:
     serial::Serial serial_;
+    std::string port_name_;
+    uint32_t baudrate_{0};
+    bool initialized_{false};
+    rclcpp::Time last_reconnect_attempt_;
+
     std::unique_ptr<NProtocolExtracter> protocol_extraction_;
     ProtocolManager protocol_manager_;
     std::string frame_id_;
 
     rclcpp::TimerBase::SharedPtr serial_read_timer_;
+
+    bool tryOpenSerial();
     void serialReadTimer();
     void initDataTransmission();
     void initNodeFrame0();

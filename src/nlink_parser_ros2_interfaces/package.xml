@@ -4,8 +4,8 @@
   <version>2.1.0</version>
   <description>The nlink parser package in ros2, used for products of nooploop</description>
 
-  <maintainer email="nooploop.studio@gmail.com">Samuel Hsu</maintainer>
-
+  <maintainer email="yeogyeom1@chungbuk.ac.kr">YG_Kim</maintainer>
+  <author email="nooploop.studio@gmail.com">Samuel Hsu</author>
 
   <license>BSD</license>
   <url type="website">https://www.nooploop.com</url>

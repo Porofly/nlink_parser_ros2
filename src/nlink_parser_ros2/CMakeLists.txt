@@ -34,7 +34,6 @@ add_library(${nutils}
     src/utils/nlink_unpack/nlink_linktrack_aoa_nodeframe0.c
     src/utils/init_serial.cpp
     src/utils/nlink_protocol.cpp
-    src/utils/nutils.cpp
 )
 target_link_libraries(${nutils}
   serial::serial

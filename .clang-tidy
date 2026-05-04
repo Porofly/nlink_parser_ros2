@@ -1,0 +1,48 @@
+# Static analysis configuration for nlink_parser_ros2.
+#
+# Run on the wrapper code only (the vendored upstream parsers under
+# src/nlink_parser_ros2/src/utils/nlink_unpack/ and protocol_extracter/
+# are filtered out by HeaderFilterRegex and should not be modified locally):
+#
+#   find src/nlink_parser_ros2/src \
+#     \( -name '*.cpp' -o -name '*.h' \) \
+#     -not -path '*/nlink_unpack/*' -not -path '*/protocol_extracter/*' \
+#     -exec clang-tidy -p build/ {} +
+---
+Checks: >
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cert-*,
+  -cert-err58-cpp,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-do-while,
+  misc-*,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  performance-*,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-function-cognitive-complexity
+
+WarningsAsErrors: ''
+
+# Apply checks only to wrapper code; skip vendored submodules and ROS-generated
+# message headers.
+HeaderFilterRegex: '^.*/src/nlink_parser_ros2/src/(linktrack|linktrack_aoa|utils/(init_serial|nlink_protocol|defaults))\.[hc]p?p?$'
+
+CheckOptions:
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.PrivateMemberSuffix
+    value: _
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
+  - key:   readability-identifier-naming.ConstexprVariablePrefix
+    value: k

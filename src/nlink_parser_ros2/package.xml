@@ -4,14 +4,13 @@
   <version>2.1.0</version>
   <description>The nlink parser package in ros2, used for products of nooploop</description>
 
-  <maintainer email="aarush.gupta@hopetechnik.com">batman</maintainer>
-  <maintainer email="nooploop.studio@gmail.com">Samuel Hsu</maintainer>
-
+  <maintainer email="yeogyeom1@chungbuk.ac.kr">YG_Kim</maintainer>
+  <author email="aarush.gupta@hopetechnik.com">Aarush Gupta</author>
+  <author email="nooploop.studio@gmail.com">Samuel Hsu</author>
 
   <license>BSD</license>
 
   <url type="website">https://www.nooploop.com</url>
-    <url type="website">https://www.hopetechnik.com</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

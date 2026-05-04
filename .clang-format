@@ -1,0 +1,26 @@
+# Google style with project-specific tweaks. Apply with:
+#   find src/nlink_parser_ros2/src src/nlink_parser_ros2/launch \
+#     \( -name '*.cpp' -o -name '*.h' \) \
+#     -not -path '*/nlink_unpack/*' -not -path '*/protocol_extracter/*' \
+#     -exec clang-format -i {} +
+#
+# Note: vendored upstream code under src/nlink_parser_ros2/src/utils/nlink_unpack/
+# and protocol_extracter/ is intentionally excluded from formatting to keep diffs
+# against upstream minimal.
+---
+BasedOnStyle: Google
+Language: Cpp
+ColumnLimit: 100
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignAfterOpenBracket: Align
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+IndentCaseLabels: true
+NamespaceIndentation: All
+SortIncludes: true
+SpacesBeforeTrailingComments: 2
+Standard: c++17

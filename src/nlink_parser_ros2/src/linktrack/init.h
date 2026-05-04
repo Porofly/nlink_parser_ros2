@@ -4,8 +4,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <serial/serial.h>
 
-#include <string>
+#include <chrono>
 #include <memory>
+#include <string>
 
 #include "std_msgs/msg/string.hpp"
 #include <nlink_parser_ros2_interfaces/msg/linktrack_anchorframe0.hpp>
@@ -37,14 +38,20 @@ namespace linktrack
   {
   public:
     Init();
-    bool ok() const { return serial_.isOpen(); }
+    bool ok() const { return initialized_; }
 
   private:
     serial::Serial serial_;
+    std::string port_name_;
+    uint32_t baudrate_{0};
+    bool initialized_{false};
+    rclcpp::Time last_reconnect_attempt_;
+
     std::unique_ptr<NProtocolExtracter> protocol_extraction_;
     ProtocolManager protocol_manager_;
     std::string frame_id_;
 
+    bool tryOpenSerial();
     void initDataTransmission();
     void serialReadTimer();
     void initAnchorFrame0();
