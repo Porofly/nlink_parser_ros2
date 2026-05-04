@@ -2,7 +2,7 @@
 <package format="3">
   <name>nlink_parser_ros2_interfaces</name>
   <version>2.1.0</version>
-  <description>The nlink parser package in ros2, used for products of nooploop</description>
+  <description>Message definitions for the nlink_parser_ros2 driver.</description>
 
   <maintainer email="yeogyeom1@chungbuk.ac.kr">YG_Kim</maintainer>
   <author email="nooploop.studio@gmail.com">Samuel Hsu</author>
@@ -10,19 +10,17 @@
   <license>BSD</license>
   <url type="website">https://www.nooploop.com</url>
 
-
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>rclcpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <exec_depend>rclcpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
- 
+
   <build_depend>rosidl_default_generators</build_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <depend>std_msgs</depend>
+  <depend>builtin_interfaces</depend>
+
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
-
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
