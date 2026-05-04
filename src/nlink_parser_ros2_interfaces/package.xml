@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>nlink_parser_ros2_interfaces</name>
-  <version>2.1.0</version>
+  <version>1.0.0</version>
   <description>Message definitions for the nlink_parser_ros2 driver.</description>
 
   <maintainer email="yeogyeom1@chungbuk.ac.kr">YG_Kim</maintainer>

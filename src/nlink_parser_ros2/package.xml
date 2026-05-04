@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>nlink_parser_ros2</name>
-  <version>2.1.0</version>
+  <version>1.0.0</version>
   <description>The nlink parser package in ros2, used for products of nooploop</description>
 
   <maintainer email="yeogyeom1@chungbuk.ac.kr">YG_Kim</maintainer>
