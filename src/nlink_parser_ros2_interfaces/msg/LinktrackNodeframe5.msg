@@ -1,3 +1,4 @@
+std_msgs/Header header
 uint8 role
 uint32 id
 uint32 local_time

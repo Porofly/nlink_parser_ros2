@@ -1,7 +1,8 @@
 #ifndef LINKTRACKAOAINIT_H
 #define LINKTRACKAOAINIT_H
 
-#include <unordered_map>
+#include <memory>
+#include <string>
 
 #include <rclcpp/rclcpp.hpp>
 #include <serial/serial.h>
@@ -18,25 +19,26 @@
 
 namespace linktrack_aoa
 {
-  class Init : public rclcpp::Node 
+  class Init : public rclcpp::Node
   {
   public:
-    explicit Init(NProtocolExtracter *protocol_extraction,
-                  serial::Serial *serial);
+    Init();
+    bool ok() const { return serial_.isOpen(); }
 
   private:
-    rclcpp::TimerBase::SharedPtr serial_read_timer_;
-    serial::Serial *g_serial;
-    NProtocolExtracter* protocol_extraction_;
+    serial::Serial serial_;
+    std::unique_ptr<NProtocolExtracter> protocol_extraction_;
     ProtocolManager protocol_manager_;
-    void DTCallback(const std_msgs::msg::String::SharedPtr msg);
+    std::string frame_id_;
+
+    rclcpp::TimerBase::SharedPtr serial_read_timer_;
     void serialReadTimer();
     void initDataTransmission();
-    void initNodeFrame0(NProtocolExtracter *protocol_extraction);
-    void InitAoaNodeFrame0(NProtocolExtracter *protocol_extraction);
-    std::unordered_map<NProtocolBase *, rclcpp::Publisher<nlink_parser_ros2_interfaces::msg::LinktrackNodeframe0>::SharedPtr> publishers_;
-    std::unordered_map<NProtocolBase *, rclcpp::Publisher<nlink_parser_ros2_interfaces::msg::LinktrackAoaNodeframe0>::SharedPtr> publishers_aoa_;
+    void initNodeFrame0();
+    void InitAoaNodeFrame0();
 
+    rclcpp::Publisher<nlink_parser_ros2_interfaces::msg::LinktrackNodeframe0>::SharedPtr pub_node_frame0_;
+    rclcpp::Publisher<nlink_parser_ros2_interfaces::msg::LinktrackAoaNodeframe0>::SharedPtr pub_aoa_node_frame0_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr dt_sub_;
   };
 } // namespace linktrack_aoa

@@ -1,3 +1,6 @@
-port_config:
-  port_name: "/dev/ttyCH343USB0"
-  baudrate: "921600"
+/**:
+  ros__parameters:
+    port_name: "/dev/ttyCH343USB0"
+    baudrate: 921600
+    frame_id: "uwb_link"
+    serial_read_rate_hz: 100.0
