@@ -32,8 +32,6 @@ set(msg_files
 "msg/LinktrackNodeframe3.msg"
 "msg/LinktrackTag.msg"
 "msg/LinktrackTagframe0.msg"
-"msg/TofsenseCascade.msg"
-"msg/TofsenseFrame0.msg"
 "msg/LinktrackAoaNode0.msg"
 "msg/LinktrackAoaNodeframe0.msg"
 "msg/LinktrackNode5.msg"

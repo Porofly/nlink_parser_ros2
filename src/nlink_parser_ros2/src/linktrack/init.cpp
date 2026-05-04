@@ -10,6 +10,18 @@
     DEST[_CNT] = SRC[_CNT];                                                    \
   }
 
+namespace {
+// Clamp the device-reported valid_node_count to the static capacity of the
+// upstream parser's nodes[] array. The parser already validates incoming
+// frames, but this is a defensive boundary at the ROS 2 wrapper layer:
+// a malformed device payload must never cause an out-of-bounds read here.
+template <typename Arr>
+size_t clamp_node_count(size_t reported, const Arr& arr) {
+  constexpr size_t kCapacity = sizeof(arr) / sizeof(arr[0]);
+  return reported < kCapacity ? reported : kCapacity;
+}
+}  // namespace
+
 namespace linktrack
 {
   Init::Init() : Node("linktrack_ros2")
@@ -110,7 +122,8 @@ namespace linktrack
       msg.system_time = data.system_time;
       auto &msg_nodes = msg.nodes;
       decltype(msg.nodes)::value_type msg_node;
-      for (size_t i = 0, icount = data.valid_node_count; i < icount; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto node = data.nodes[i];
         msg_node.role = node->role;
@@ -158,8 +171,9 @@ namespace linktrack
       msg.header.frame_id = frame_id_;
       msg.role = data.role;
       msg.id = data.id;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -185,8 +199,9 @@ namespace linktrack
       msg.local_time = data.local_time;
       msg.system_time = data.system_time;
       msg.voltage = data.voltage;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -218,8 +233,9 @@ namespace linktrack
       ARRAY_ASSIGN(msg.imu_acc_3d, data.imu_acc_3d)
       ARRAY_ASSIGN(msg.angle_3d, data.angle_3d)
       ARRAY_ASSIGN(msg.quaternion, data.quaternion)
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -246,8 +262,9 @@ namespace linktrack
       msg.local_time = data.local_time;
       msg.system_time = data.system_time;
       msg.voltage = data.voltage;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -274,8 +291,9 @@ namespace linktrack
       msg.local_time = data.local_time;
       msg.system_time = data.system_time;
       msg.voltage = data.voltage;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -299,8 +317,9 @@ namespace linktrack
       msg.header.frame_id = frame_id_;
       msg.role = data.role;
       msg.id = data.id;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];

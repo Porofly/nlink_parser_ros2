@@ -26,6 +26,14 @@ void NLTAoa_ProtocolNodeFrame0::UnpackFrameData(const uint8_t *data)
   g_nltaoa_nodeframe0.UnpackData(data, length());
 }
 
+namespace {
+template <typename Arr>
+size_t clamp_node_count(size_t reported, const Arr& arr) {
+  constexpr size_t kCapacity = sizeof(arr) / sizeof(arr[0]);
+  return reported < kCapacity ? reported : kCapacity;
+}
+}  // namespace
+
 namespace linktrack_aoa
 {
   Init::Init() : Node("linktrack_aoa_ros2")
@@ -111,8 +119,9 @@ namespace linktrack_aoa
       msg.header.frame_id = frame_id_;
       msg.role = data.role;
       msg.id = data.id;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
@@ -138,8 +147,9 @@ namespace linktrack_aoa
       msg.local_time = data.local_time;
       msg.system_time = data.system_time;
       msg.voltage = data.voltage;
-      msg.nodes.resize(data.valid_node_count);
-      for (size_t i = 0; i < data.valid_node_count; ++i)
+      const size_t icount = clamp_node_count(data.valid_node_count, data.nodes);
+      msg.nodes.resize(icount);
+      for (size_t i = 0; i < icount; ++i)
       {
         auto &msg_node = msg.nodes[i];
         auto node = data.nodes[i];
