@@ -31,6 +31,7 @@ def generate_launch_description():
         package="nlink_parser_ros2",
         executable="linktrack",
         output="screen",
+        name="linktrack_tag0_node",
         arguments=[linktrack_tag0_param_file],
         parameters=[{ 'system_id': LaunchConfiguration('system_id'), 'tag_id': 0 }]
     )
@@ -39,6 +40,7 @@ def generate_launch_description():
         package="nlink_parser_ros2",
         executable="linktrack",
         output="screen",
+        name="linktrack_tag1_node",
         arguments=[linktrack_tag1_param_file],
         parameters=[{ 'system_id': LaunchConfiguration('system_id'), 'tag_id': 1 }]
     )
