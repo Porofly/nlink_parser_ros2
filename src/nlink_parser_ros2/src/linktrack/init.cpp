@@ -45,25 +45,25 @@ namespace linktrack
 
   void Init::startSerialReadThread()
   {
-    // define a delay for serial read
-    std::chrono::milliseconds delay_ms(40);
-
-    serial_thread_ = std::thread([this, delay_ms]() {
-      std::string buf;
+    serial_thread_ = std::thread([this]() {
       while (rclcpp::ok()) {
         try {
-          size_t available_bytes = this->serial_->available();
-          if (available_bytes > 0) {
-            std::string buf;
-            buf.resize(available_bytes);
-            this->serial_->read(buf, available_bytes);
+          // Blocks until data is readable or the serial read timeout
+          // elapses, so frames are drained (and published) as soon as
+          // they arrive instead of being batched on a fixed poll period.
+          if (this->serial_->waitReadable()) {
+            size_t available_bytes = this->serial_->available();
+            if (available_bytes > 0) {
+              std::string buf;
+              buf.resize(available_bytes);
+              this->serial_->read(buf, available_bytes);
 
-            protocol_extraction_->AddNewData(buf);
+              protocol_extraction_->AddNewData(buf);
+            }
           }
         } catch (const std::exception &e) {
           RCLCPP_ERROR(this->get_logger(), "Serial read error: %s", e.what());
         }
-        std::this_thread::sleep_for(delay_ms);
       }
     });
   }
