@@ -54,8 +54,16 @@ namespace linktrack
           if (this->serial_->waitReadable()) {
             size_t available_bytes = this->serial_->available();
             if (available_bytes > 0) {
+              // Must start empty: serial::Serial::read APPENDS to the string
+              // (serial.cc:163), so sizing it first prepends that many NUL bytes
+              // to every chunk. Harmless while a chunk held whole frames, but
+              // waitReadable() returns one USB packet (64 B) at a time, so any
+              // frame longer than that is split -- and the next chunk's NULs land
+              // in the middle of it, failing the checksum. NodeFrame3 is
+              // 22 + 7*nodes bytes, so it crosses 64 B at 6 anchors and every
+              // frame is then dropped. linktrack_aoa/init.cpp already does this
+              // right.
               std::string buf;
-              buf.resize(available_bytes);
               this->serial_->read(buf, available_bytes);
 
               protocol_extraction_->AddNewData(buf);
